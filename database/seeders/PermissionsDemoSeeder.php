@@ -34,6 +34,7 @@ class PermissionsDemoSeeder extends Seeder
         Permission::create(['name' => 'publish audit']); //complete Audit
         Permission::create(['name' => 'unpublish audit']); // Undo Audit
         // User Permissions
+        Permission::create(['name' => 'view user']);
         Permission::create(['name' => 'add user']);
         Permission::create(['name' => 'edit user']);
         Permission::create(['name' => 'delete user']);

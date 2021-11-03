@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSectionsTable extends Migration
+class CreateItemsAuditTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateSectionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('sections', function (Blueprint $table) {
+        Schema::create('items_audit', function (Blueprint $table) {
             // $table->id();
             $table->bigIncrements('id');
-            // $table->timestamps();
-            $table->string('name');
-            $table->boolean('is_active')->default(1);
-            $table->boolean('status')->default(1);
-            $table->string('description');
+            // $table->unsignedInteger('audit_id');
+            // $table->unsignedInteger('item_property_id');
+            $table->bigInteger('audit_id')->unsigned();
+            $table->bigInteger('item_property_id')->unsigned();
+            $table->boolean('score')->default(false);
             $table->timestamps();
         });
     }
@@ -32,6 +32,6 @@ class CreateSectionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sections');
+        Schema::dropIfExists('items_audit');
     }
 }
