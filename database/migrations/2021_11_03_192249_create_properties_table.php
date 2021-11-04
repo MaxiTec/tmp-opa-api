@@ -14,20 +14,21 @@ class CreatePropertiesTable extends Migration
     public function up()
     {
         Schema::create('properties', function (Blueprint $table) {
-            // $table->id();
             $table->bigIncrements('id');
             $table->string('name', 100);
-            $table->string('general_manager', 100);
+            $table->string('manager', 100);
             $table->string('code', 45);
-            $table->string('brand_img', 100);
-            $table->string('address', 100);
-            $table->string('phone', 50);
-            $table->string('lat_map', 50);
-            $table->string('long_map', 50);
-            $table->string('no_rooms', 20);
-            $table->tinyInteger('is_active')->default(1);
+            $table->string('brand_img', 200);
+            $table->string('address', 250);
+            $table->string('phone', 10);
+            $table->string('phone_code', 2)->comment('only two digits for Mexican Numbers');
+            $table->string('lat', 50);
+            $table->string('lon', 50);
+            $table->integer('rooms');
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
-            $table->unique(['name','code'], 'uk_properties_name_code');
+            // The name should'nt repeat
+            $table->unique(['code']);
         });
     }
 

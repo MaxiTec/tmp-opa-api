@@ -14,22 +14,15 @@ class CreateAreasTable extends Migration
     public function up()
     {
         Schema::create('areas', function (Blueprint $table) {
-            // $table->id();
             $table->bigIncrements('id');
-            // $table->unsignedInteger('section_id');
             $table->bigInteger('section_id')->unsigned();
             $table->string('name');
+            // control fields
             $table->boolean('is_active')->default(1);
             $table->boolean('status')->default(1);
             $table->timestamps();
-
-            $table->index('section_id', 'fk_areas_to_sections');
-
-            $table->foreign('section_id', 'fk_areas_to_sections')
-                ->references('id')->on('sections')
-                // /preguntar si se restringe o es en cascada (son catalogos)
-                ->onDelete('restrict')
-                ->onUpdate('restrict');
+            // a section shouldn't have a same area name
+            $table->unique(['name', 'section_id']);
         });
     }
 

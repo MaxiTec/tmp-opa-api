@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Area extends Model
+{
+    use HasFactory;
+    protected $fillable = ['name'];
+
+    public function section(){
+        return $this->belongsTo('App\Models\Section');
+    }
+    public function areas()
+    {
+        return $this->belongsToMany(Criteria::class);
+        // return $this->belongsToMany(Criteria::class, 'area_criteria', 'criteria_id', 'area_id');
+    }
+}
