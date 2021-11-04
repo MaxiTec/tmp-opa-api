@@ -25,10 +25,12 @@ Route::middleware('auth:api')->group( function () {
     // Route::resource('products', ProductController::class);
     // Properties  Routes
     Route::group(['middleware' => ['role:auditor']], function () {
-        Route::resource('sections', ProductController::class);
+        Route::get('test',function () {
+            return 'FUNCIONA TEIENES LOS PERMISOS';
+        });
+        // Route::resource('sections', ProductController::class);
         // Route::prefix('/sections')->group(function () {
         //     Route::resource('/', ProductController::class);
         // });
     });
-    
 });

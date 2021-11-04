@@ -14,8 +14,8 @@ class CreateAreasTable extends Migration
     public function up()
     {
         Schema::create('areas', function (Blueprint $table) {
-            $table->id();
-            // $table->bigIncrements('id');
+            // $table->id();
+            $table->bigIncrements('id');
             // $table->unsignedInteger('section_id');
             $table->bigInteger('section_id')->unsigned();
             $table->string('name');
