@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\RegisterController;
+use App\Http\Controllers\API\SectionController;
+use App\Http\Controllers\API\AreaController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,11 +21,20 @@ use App\Http\Controllers\API\RegisterController;
 //     return $request->user();
 // });
 Route::post('register', [RegisterController::class, 'register']);
-Route::post('login', [RegisterController::class, 'login']);
-     
+Route::post('login', [RegisterController::class, 'login'])->name('login');
+Route::apiResource('sections', SectionController::class);
+Route::post('sections/areas/{id}', [SectionController::class, 'assignAreas'])->name('assign');
+
+    Route::prefix('/areas')->group(function () {
+        Route::get('/', [AreaController::class,'index'])->name('areas.index');
+        Route::get('/{id}', [AreaController::class,'show'])->name('areas.show');
+        Route::put('/{id}', [AreaController::class,'update'])->name('areas.update');
+    });
 Route::middleware('auth:api')->group( function () {
     // Route::resource('products', ProductController::class);
-    // Properties  Routes
+    // Section  Routes
+    // Route::apiResource('sections', SectionController::class);
+
     Route::group(['middleware' => ['role:auditor']], function () {
         Route::get('test',function () {
             return 'FUNCIONA TEIENES LOS PERMISOS';
