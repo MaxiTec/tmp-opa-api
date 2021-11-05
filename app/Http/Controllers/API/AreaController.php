@@ -84,7 +84,7 @@ class AreaController extends Controller
 
             $area->update($data);
 
-            return response(['data' => new AreaResource($section)]);
+            return response(['data' => new AreaResource($area)]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
         }
