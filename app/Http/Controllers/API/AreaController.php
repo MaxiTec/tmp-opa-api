@@ -98,6 +98,71 @@ class AreaController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $area = Area::with(['section'=>function($query){
+                // Solamente si las areas estan activas esto no debe tenerlo los admins
+                    $query->where('is_active',true)->where('status',true);
+            }])
+            ->where('is_active', true)
+            ->where('status', true)
+            ->findOrFail($id);
+            if($area){
+                // cambiamos status a 0
+                $area->status = 0;
+                $area->save();
+                return response([
+                    'data' => new AreaResource($area),
+                ]);
+            }
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function toggleStatus($id) {
+        try {
+            $area = Area::findOrFail($id);
+            $area->status = !$area->status;
+            $area->save();
+            return response(['data' => new AreaResource($area),]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
+        
+    }
+    public function toggleActive($id) {
+        try {
+            $area = Area::findOrFail($id);
+            $area->is_active = !$area->is_active;
+            $area->save();
+            return response(['data' => new AreaResource($area),]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
+        
+    }
+
+    public function assignCriteria(Request $request, $id){
+        // we get area id and creiteria id's
+        $data = $request->all();
+        // return $data;
+        try {
+            $validator = Validator::make($data, [
+                'criteria' => ['required','array'],
+                'criteria.*' => 'exists:criteria,id',
+            ]);
+             
+            if ($validator->fails()) {
+                return response(['error' =>$validator->messages()->first()],Response::HTTP_BAD_REQUEST);
+            }
+
+            $area = Area::findOrFail($id);
+            // return $data['criteria'];
+            $area->criteria()->sync($data['criteria']);
+
+            return response(['data' => new AreaResource($area)]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
     }
 }

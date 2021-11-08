@@ -148,6 +148,7 @@ class SectionController extends Controller
             ->where('is_active', true)
             ->where('status', true)
             ->findOrFail($id);
+            
             if($section){
                 $section->status = 0;
                 $section->save();
