@@ -46,11 +46,6 @@ class SectionController extends Controller
         }
         $section = new Section($request->all());
         $section->save();
-        // if($request->has('areas')){
-        //     $areas_id = Area::inRandomOrder()->limit(5)->get();
-        //     // one to many relationship
-        //     $section->areas()->attach($areas_id);
-        // }
         return response([
             'data' => new SectionResource($section),
         ], Response::HTTP_CREATED);

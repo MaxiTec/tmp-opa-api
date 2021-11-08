@@ -11,7 +11,7 @@ class Property extends Model
     protected $fillable = ['name','manager','code','brand_img','address','phone','lat','lon','phone_code','rooms'];
 
 
-    public function CriteriosByArea()
+    public function CriteriaByArea()
     {
         return $this->belongsToMany(AreaCriteria::class);
     }

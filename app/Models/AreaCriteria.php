@@ -13,6 +13,5 @@ class AreaCriteria extends Model
     public function property()
     {
         return $this->belongsToMany(Property::class);
-        // return $this->belongsToMany(Area::class, 'area_criteria', 'criteria_id', 'area_id');
     }
 }

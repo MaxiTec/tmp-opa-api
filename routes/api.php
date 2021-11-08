@@ -49,7 +49,17 @@ Route::prefix('/areas')->group(function () {
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::::::::::::::::::::::::::::::::: AREAS ROUTES:::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-Route::apiResource('properties', PropertyController::class);
+// Route::apiResource('properties', PropertyController::class);
+Route::prefix('/properties')->group(function () {
+    Route::get('/', [PropertyController::class,'index'])->name('properties.index');
+    Route::post('/', [PropertyController::class,'store'])->name('properties.create');
+    Route::get('/{id}', [PropertyController::class,'show'])->name('properties.show');
+    Route::post('/{id}/update', [PropertyController::class,'update'])->name('properties.update');
+    Route::delete('/{id}', [PropertyController::class,'destroy'])->name('properties.delete');
+    // Route::get('/{id}/status', [AreaController::class,'toggleStatus'])->name('areas.status');
+    // Route::get('/{id}/active', [AreaController::class,'toggleActive'])->name('areas.active');
+    // Route::post('/{id}/assign', [AreaController::class,'assignCriteria'])->name('areas.assign');
+});
 
 Route::middleware('auth:api')->group( function () {
     // Route::resource('products', ProductController::class);
