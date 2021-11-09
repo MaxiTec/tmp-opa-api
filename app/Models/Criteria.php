@@ -14,6 +14,5 @@ class Criteria extends Model
     public function areas()
     {
         return $this->belongsToMany(Area::class);
-        // return $this->belongsToMany(Area::class, 'area_criteria', 'criteria_id', 'area_id');
     }
 }

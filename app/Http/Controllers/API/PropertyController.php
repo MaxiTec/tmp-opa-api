@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Property;
+use App\Models\Section;
 use App\Http\Resources\PropertyResource;
 // use App\Http\Controllers\DOSpacesController as DoSpace;
 use App\Http\Requests\PropertyPostRequest;
@@ -12,6 +13,8 @@ use App\Http\Traits\UploadImageTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\SectionCollection;
+use DB;
 class PropertyController extends Controller
 {
     use UploadImageTrait;
@@ -129,15 +132,36 @@ class PropertyController extends Controller
             $property = Property::findOrFail($id);
             // ::where('is_active', true)
             // ->findOrFail($id);
-            if($property){
-                $property->is_active = 0;
-                $property->save();
-                return response([
-                    'data' => new PropertyResource($property),
-                ]);
-            }
+            $property->is_active = 0;
+            $property->save();
+            return response([
+                'data' => new PropertyResource($property),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
         }
+    }
+    // Esto puede estar en sections
+    public function showCriteria($id){
+        // obtenemos id del hotel para ir asignando del template
+        $catalog = Section::with('areas','areas.criteria')->get();
+        // return $catalog;
+        return new SectionCollection($catalog);
+    }
+    public function AssignToProperties(Request $request , $id){
+        // dd($request->input('questions'));
+        $property = Property::findOrFail($id);
+        // dd($property);
+        $property->CriteriaByArea()->sync($request->input('questions'));
+    }
+    public function ProgramByHotel(Request $request , $id){
+        // dd($request->input('questions'));
+        $property = Property::whereHas('CriteriaByArea',function($query){
+            return $query->join('areas','CriteriaByArea.area_id','=','areas.id');
+        })->get();
+        // dd($property);
+
+        // $property->CriteriaByArea;
+        return $property;
     }
 }

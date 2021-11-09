@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCriteriaTable extends Migration
+class CreateAuditsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateCriteriaTable extends Migration
      */
     public function up()
     {
-        Schema::create('criteria', function (Blueprint $table) {
+        Schema::create('audits', function (Blueprint $table) {
+            // $table->id();
             $table->bigIncrements('id');
-            $table->string('name');
-            $table->boolean('is_active')->default(1);
-            $table->boolean('status')->default(1);
+            $table->bigInteger('criteria_id')->unsigned();
+            $table->boolean('check')->default(1);
+            $table->boolean('not_apply')->default(1);
+            $table->string('observations', 1000);
             $table->timestamps();
-            // The name should'nt repeat
-            $table->unique('name');
         });
     }
 
@@ -31,6 +31,6 @@ class CreateCriteriaTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('criteria');
+        Schema::dropIfExists('audits');
     }
 }

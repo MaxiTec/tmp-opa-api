@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class AreaCriteria extends Model
 {
     use HasFactory;
+    protected $table = 'area_criteria';
     protected $fillable = ['area_id','criteria_id'];
 
     public function property()
     {
         return $this->belongsToMany(Property::class);
     }
+
+    
 }
