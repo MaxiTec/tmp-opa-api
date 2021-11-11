@@ -70,7 +70,6 @@ class RegisterController extends BaseController
             foreach($roles as $role) {
                 $role->permissions;
             }
-            // juntamos todos los roles para mandarlos al FRONT
             $permissions = $roles->map(function($item, $key) {
                 return $item->permissions->map(function($item, $key){
                     return Str::slug($item->name);
