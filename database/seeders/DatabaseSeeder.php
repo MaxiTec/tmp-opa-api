@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // Create and assing Roles and permissions
-        // $this->call(PermissionDemoSeeder::class);
+        $this->call(PermissionsDemoSeeder::class);
         // $this->call(SpaTableSeeder::class);
 
         // populate Sections and Areas

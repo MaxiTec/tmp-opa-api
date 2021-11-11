@@ -13,6 +13,6 @@ class Criteria extends Model
 
     public function areas()
     {
-        return $this->belongsToMany(Area::class);
+        return $this->belongsToMany(Area::class)->withPivot('id');
     }
 }

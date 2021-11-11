@@ -13,8 +13,12 @@ class AreaCriteria extends Model
 
     public function property()
     {
-        return $this->belongsToMany(Property::class);
+        return $this->belongsToMany(Property::class)->withPivot('id');
     }
 
+    // public function property()
+    // {
+    //     return $this->belongsToMany(Property::class);
+    // }
     
 }

@@ -12,6 +12,6 @@ class Property extends Model
 
     public function CriteriaByArea()
     {
-        return $this->belongsToMany(AreaCriteria::class,'programs','property_id','area_criteria_id')->withTimestamps();
+        return $this->belongsToMany(AreaCriteria::class,'programs','property_id','area_criteria_id')->withPivot('id')->withTimestamps();
     }
 }

@@ -14,9 +14,11 @@ class CriteriaResource extends JsonResource
      */
     public function toArray($request)
     {
+        // dd($this->checked);
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'checked' => $this->checked
         ];
     }
 }

@@ -14,8 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Resources\SectionCollection;
+use App\Http\Resources\SectionResource;
 use DB;
-class PropertyController extends Controller
+
+// class RegisterController extends BaseController
+class PropertyController extends BaseController
 {
     use UploadImageTrait;
     /**
@@ -43,11 +46,11 @@ class PropertyController extends Controller
 
         if($is_upload){
             $datos['brand_img'] = $is_upload;
-            $property = Property::create($datos);
+        }
+        $property = Property::create($datos);
             return response([
                 'data' => new PropertyResource($property),
             ], Response::HTTP_CREATED);
-        }
     }
 
     /**
@@ -130,8 +133,6 @@ class PropertyController extends Controller
     {
         try {
             $property = Property::findOrFail($id);
-            // ::where('is_active', true)
-            // ->findOrFail($id);
             $property->is_active = 0;
             $property->save();
             return response([
@@ -149,19 +150,50 @@ class PropertyController extends Controller
         return new SectionCollection($catalog);
     }
     public function AssignToProperties(Request $request , $id){
-        // dd($request->input('questions'));
         $property = Property::findOrFail($id);
-        // dd($property);
         $property->CriteriaByArea()->sync($request->input('questions'));
     }
     public function ProgramByHotel(Request $request , $id){
-        // dd($request->input('questions'));
-        $property = Property::whereHas('CriteriaByArea',function($query){
-            return $query->join('areas','CriteriaByArea.area_id','=','areas.id');
-        })->get();
-        // dd($property);
+        // get all questions in this Hotel
+        $catalog = Section::with('areas','areas.criteria')->get();
+        // Data of hotel
+        $property = Property::find($id);
 
-        // $property->CriteriaByArea;
-        return $property;
+        // Saco todos los ids de Criteria Area (preguntas del hotel)
+        $criteria = $property->CriteriaByArea->pluck('id');
+
+        // $criteria = DB::table('programs')->where('property_id',$id)->get()->pluck('area_criteria_id');
+
+        // y hago una comparacion de todas las preguntas por secciones y areas y "checkeamos" los que tengan el hotel
+        foreach ($catalog as $key => $section) {
+            foreach ($section->areas as $key => $area) {
+                foreach ($area->criteria as $key => $question) {
+                    $question->checked = in_array($question->pivot->id, $criteria->toArray());
+                }   
+            }
+        }
+        $success['property'] =  new PropertyResource($property);
+        $success['sections'] =  new SectionCollection($catalog);
+        return $this->sendResponse($success, '');
+    }
+
+    public function duplicate(PropertyPostRequest $request, $id)
+    {
+        $file = $request->file('brand_img');
+        $datos = $request->all();
+
+        $is_upload = $this->uploadImage($request,'hotels');
+        $tmplHotel = Property::find($id);
+
+        if($is_upload){
+            $datos['brand_img'] = $is_upload;
+        }
+        // Acá hacemos la redireccion de los datos
+        $property = Property::create($datos);
+        $questions = $tmplHotel->CriteriaByArea->pluck('id');
+        // return $questions;
+        $property->CriteriaByArea()->sync($questions);
+
+        return $this->sendResponse($property, 'Hotel duplicated successfully');
     }
 }

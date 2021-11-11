@@ -26,7 +26,7 @@ class PropertyPostRequest extends FormRequest
         return [
             'name'=> 'required|string',
             'manager' => 'required|string|max:100',
-            'code' => 'required|unique:properties,code,{$this->post->id}',
+            'code' => 'required|unique:properties,code,'. $this->id,
             'brand_img' => 'required|image|max:1024',
             'address' => 'required|string',
             'phone' => 'required|string',

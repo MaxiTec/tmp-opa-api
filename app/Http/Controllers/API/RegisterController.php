@@ -5,10 +5,12 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 use Config;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 // Extendemos de BaseController para usar los metodos de Response
 class RegisterController extends BaseController
@@ -22,11 +24,12 @@ class RegisterController extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email',
+            'last_name' => 'required',
+            'phone' => 'nullable|string',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required',
             'c_password' => 'required|same:password',
-            // 'rol'=>'required',
-            // 'permissions'=>'required'
+            'roles'=>'required' // or roles?
         ]);
    
         if($validator->fails()){
@@ -34,20 +37,14 @@ class RegisterController extends BaseController
         }
    
         $input = $request->all();
-        if(!$request->has('roles')){
-            // $rol = buscar rol
-            $user->assignRole($rol);
-        }else{
-            // Default Role
-            $user->assignRole($role1);
-        }
-        $input['password'] = bcrypt($input['password']);
-        // Tomamos datos de User, Agregamos nuevos campos desde las imagraciones
+        $input['password'] = Hash::make($input['password']);
         $user = User::create($input);
         // !We need to add permissions and roles
+        $user->assignRole($request->input('roles'));
         // Tomamos nombre de App;
         $success['token'] =  $user->createToken(config('app.name'))->accessToken;
         $success['name'] =  $user->name;
+        $success['last_name'] =  $user->last_name;
    
         return $this->sendResponse($success, 'User register successfully.');
     }
@@ -82,6 +79,7 @@ class RegisterController extends BaseController
 
             $success['token'] =  $user->createToken(config('app.name'))->accessToken; 
             $success['name'] =  $user->name;
+            $success['last_name'] =  $user->last_name;
             $success['roles'] =  $roles;
             $success['permissions'] =  $permissions;
    
@@ -91,4 +89,17 @@ class RegisterController extends BaseController
             return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);
         } 
     }
+
+    public function logout(Request $request)
+    {
+        $request->user()->token()->revoke();
+        return $this->sendResponse(null, 'Successfully logged out');
+    }
+
+    // // TODO: Role Controller
+    // public function roles(Request $request)
+    // {
+    //     $roles = Role::orderBy('id','DESC')->paginate(5);
+    //     return $this->sendResponse($success, 'Successfully logged out');
+    // }
 }

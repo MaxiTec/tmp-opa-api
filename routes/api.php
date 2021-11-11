@@ -8,6 +8,7 @@ use App\Http\Controllers\API\CriteriaController;
 use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\PropertyController;
 use App\Http\Controllers\API\ProgramController;
+use App\Http\Controllers\API\RoleController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,18 +20,13 @@ use App\Http\Controllers\API\ProgramController;
 |
 */
 
-// remove sanctum routes and add pasport routes
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+// Public routes
 Route::post('register', [RegisterController::class, 'register']);
 Route::post('login', [RegisterController::class, 'login'])->name('login');
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::::::::::::::::::::::::::::::::: SECTION ROUTES:::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-
 Route::apiResource('sections', SectionController::class);
-// TODO: id must be in front of 
 Route::post('sections/{id}/areas', [SectionController::class, 'assignAreas'])->name('assign');
 
 
@@ -38,7 +34,6 @@ Route::apiResource('criteria', CriteriaController::class);
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::::::::::::::::::::::::::::::::: AREAS ROUTES:::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-
 
 Route::prefix('/areas')->group(function () {
     Route::get('/', [AreaController::class,'index'])->name('areas.index');
@@ -67,20 +62,15 @@ Route::prefix('/properties')->group(function () {
     Route::get('/{id}/catalog', [PropertyController::class,'showCriteria'])->name('properties.catalog');
     Route::post('/{id}/assign', [PropertyController::class,'AssignToProperties'])->name('properties.assign');
     Route::post('/{id}/show', [PropertyController::class,'ProgramByHotel'])->name('properties.showByHotel');
+    Route::post('/{id}/duplicate', [PropertyController::class,'duplicate'])->name('properties.duplicate');
 });
 
 Route::middleware('auth:api')->group( function () {
-    // Route::resource('products', ProductController::class);
-    // Section  Routes
-    // Route::apiResource('sections', SectionController::class);
-
+    Route::post('logout', [RegisterController::class, 'logout'])->name('logout');
     Route::group(['middleware' => ['role:auditor']], function () {
-        Route::get('test',function () {
-            return 'FUNCIONA TEIENES LOS PERMISOS';
-        });
-        // Route::resource('sections', ProductController::class);<
-        // Route::prefix('/sections')->group(function () {
-        //     Route::resource('/', ProductController::class);
-        // });
+        Route::apiResource('roles', RoleController::class);
     });
+    // Route::group(['middleware' => ['role:admin']], function () {
+    //     Route::apiResource('roles', RoleController::class);
+    // });
 });
