@@ -9,6 +9,7 @@ use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\PropertyController;
 use App\Http\Controllers\API\ProgramController;
 use App\Http\Controllers\API\RoleController;
+use App\Http\Controllers\API\AuditController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -63,6 +64,11 @@ Route::prefix('/properties')->group(function () {
     Route::post('/{id}/assign', [PropertyController::class,'AssignToProperties'])->name('properties.assign');
     Route::post('/{id}/show', [PropertyController::class,'ProgramByHotel'])->name('properties.showByHotel');
     Route::post('/{id}/duplicate', [PropertyController::class,'duplicate'])->name('properties.duplicate');
+});
+
+Route::prefix('/audits')->group(function () {
+    Route::get('/', [AuditController::class,'index'])->name('audit.index');
+    Route::post('/{id}', [AuditController::class,'store'])->name('audit.create');
 });
 
 Route::middleware('auth:api')->group( function () {

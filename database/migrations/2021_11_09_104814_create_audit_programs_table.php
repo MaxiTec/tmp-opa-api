@@ -17,9 +17,15 @@ class CreateAuditProgramsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('programs_id')->unsigned();
             $table->bigInteger('audits_id')->unsigned();
+            $table->bigInteger('user_id')->unsigned();
+
             $table->boolean('is_active')->default(1);
             $table->boolean('is_visible')->default(1);
             $table->string('observations', 1000);
+            $table->date('expiry_date');
+            $table->date('executed_date');
+            $table->string('auditor_name',200);
+
             $table->timestamps();
 
             $table->index(['programs_id'], 'fk_audit_programs_to_programs');
