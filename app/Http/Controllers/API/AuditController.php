@@ -64,8 +64,7 @@ class AuditController extends BaseController
                 // Model::insert($data); // Eloquent approach
                 // Audit::
                 // Creamos una nueva Auditoria por seccion  ya que cada auditoria tiene observaciones
-                // Aca tengo una duda, se supone que cada pregunta puede repetirse en  diferentes secciones,
-                // que pasa si quiero relacionar la pregunta con la seccion de una auditoria, como sabré a que seccion pertenece
+              
 
             }
         }

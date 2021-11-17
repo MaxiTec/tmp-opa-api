@@ -14,7 +14,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
     use HasRoles; //we need  this to manage the permissions and roles
-
+     // Is necessary for use it in API routes accept all guards (api, web, etc.)
+    public $guard_name = '*';
     /**
      * The attributes that are mass assignable.
      *
@@ -46,4 +47,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    protected function getDefaultGuardName(): string
+    {
+        return '*';
+    }
 }

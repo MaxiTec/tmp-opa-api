@@ -16,10 +16,14 @@ class CreateAuditsTable extends Migration
         Schema::create('audits', function (Blueprint $table) {
             // $table->id();
             $table->bigIncrements('id');
-            $table->bigInteger('criteria_id')->unsigned();
+            // Aca tengo una duda, se supone que cada pregunta puede repetirse en  diferentes secciones y Areas,
+            // que pasa si quiero relacionar la pregunta con la seccion de una auditoria, como sabré a que seccion pertenece
+            // no seria mejor relacionarlo con area_criteria_id?
+            $table->bigInteger('area_criteria_id')->unsigned();
+            // $table->bigInteger('criteria_id')->unsigned();
             $table->boolean('check')->default(1);
             $table->boolean('not_apply')->default(1);
-            $table->string('observations', 1000);
+            $table->string('observations', 1000)->nullable();
             $table->timestamps();
         });
     }

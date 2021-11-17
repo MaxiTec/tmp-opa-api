@@ -20,7 +20,15 @@ use DB;
 // class RegisterController extends BaseController
 class PropertyController extends BaseController
 {
+    public function __construct()
+    {
+        $this->middleware('role:administrador');
+        $this->middleware('role:administrador|auditor')->only('index', 'show');
+    }
+
     use UploadImageTrait;
+
+    
     /**
      * Display a listing of the resource.
      *
@@ -157,7 +165,7 @@ class PropertyController extends BaseController
         // get all questions in this Hotel
         $catalog = Section::with('areas','areas.criteria')->get();
         // Data of hotel
-        $property = Property::find($id);
+        $property = Property::findOrFail($id);
 
         // Saco todos los ids de Criteria Area (preguntas del hotel)
         $criteria = $property->CriteriaByArea->pluck('id');

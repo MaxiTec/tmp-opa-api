@@ -165,4 +165,6 @@ class AreaController extends Controller
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
         }
     }
+
+    //create a new area and assign it to a section
 }

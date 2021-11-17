@@ -22,7 +22,6 @@ use App\Http\Controllers\API\AuditController;
 */
 
 // Public routes
-Route::post('register', [RegisterController::class, 'register']);
 Route::post('login', [RegisterController::class, 'login'])->name('login');
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::::::::::::::::::::::::::::::::: SECTION ROUTES:::::::::::::::::::::::::::
@@ -54,17 +53,7 @@ Route::prefix('/programs')->group(function () {
 ::::::::::::::::::::::::::::::::: AREAS ROUTES:::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 // Route::apiResource('properties', PropertyController::class);
-Route::prefix('/properties')->group(function () {
-    Route::get('/', [PropertyController::class,'index'])->name('properties.index');
-    Route::post('/', [PropertyController::class,'store'])->name('properties.create');
-    Route::get('/{id}', [PropertyController::class,'show'])->name('properties.show');
-    Route::post('/{id}/update', [PropertyController::class,'update'])->name('properties.update');
-    Route::delete('/{id}', [PropertyController::class,'destroy'])->name('properties.delete');
-    Route::get('/{id}/catalog', [PropertyController::class,'showCriteria'])->name('properties.catalog');
-    Route::post('/{id}/assign', [PropertyController::class,'AssignToProperties'])->name('properties.assign');
-    Route::post('/{id}/show', [PropertyController::class,'ProgramByHotel'])->name('properties.showByHotel');
-    Route::post('/{id}/duplicate', [PropertyController::class,'duplicate'])->name('properties.duplicate');
-});
+
 
 Route::prefix('/audits')->group(function () {
     Route::get('/', [AuditController::class,'index'])->name('audit.index');
@@ -72,7 +61,23 @@ Route::prefix('/audits')->group(function () {
 });
 
 Route::middleware('auth:api')->group( function () {
+
+    Route::post('register', [RegisterController::class, 'register']);
     Route::post('logout', [RegisterController::class, 'logout'])->name('logout');
+
+    // Properties Routes
+    Route::prefix('/properties')->group(function () {
+        Route::get('/', [PropertyController::class,'index'])->name('properties.index');
+        Route::post('/', [PropertyController::class,'store'])->name('properties.create');
+        Route::get('/{id}', [PropertyController::class,'show'])->name('properties.show');
+        Route::post('/{id}/update', [PropertyController::class,'update'])->name('properties.update');
+        Route::delete('/{id}', [PropertyController::class,'destroy'])->name('properties.delete');
+        Route::get('/{id}/catalog', [PropertyController::class,'showCriteria'])->name('properties.catalog');
+        Route::post('/{id}/assign', [PropertyController::class,'AssignToProperties'])->name('properties.assign');
+        Route::post('/{id}/show', [PropertyController::class,'ProgramByHotel'])->name('properties.showByHotel');
+        Route::post('/{id}/duplicate', [PropertyController::class,'duplicate'])->name('properties.duplicate');
+    });
+
     Route::group(['middleware' => ['role:auditor']], function () {
         Route::apiResource('roles', RoleController::class);
     });

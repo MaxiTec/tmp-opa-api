@@ -20,6 +20,10 @@ class RegisterController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->middleware('role:administrador', ['only' => ['register']]);
+    }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [

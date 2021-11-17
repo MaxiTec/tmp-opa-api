@@ -21,10 +21,13 @@ class CreateAuditProgramsTable extends Migration
 
             $table->boolean('is_active')->default(1);
             $table->boolean('is_visible')->default(1);
-            $table->string('observations', 1000);
             $table->date('expiry_date');
             $table->date('executed_date');
+            $table->date('deleted_date');
+            // Una pregunta:  el nombre del auditor se pondra como un string?
             $table->string('auditor_name',200);
+            // Para que sirve el campo de observaciones aca?
+            $table->string('observations', 1000);
 
             $table->timestamps();
 

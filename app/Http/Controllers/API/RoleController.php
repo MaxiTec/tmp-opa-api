@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use App\Models\User;
+use App\Models\Role;
+// use Spatie\Permission\Models\Role;
+// use Spatie\Permission\Models\Permission;
 use DB;
-
+use Auth;
 class RoleController extends BaseController
 {
     function __construct()
@@ -23,7 +25,7 @@ class RoleController extends BaseController
      */
     public function index()
     {
-        $roles = Role::orderBy('id','ASC')->get();
+        $roles = Role::where('name', 'NOT LIKE', '%admin%')->orderBy('id','ASC')->get();
         // $roles = Role::orderBy('id','DESC')->paginate(5);
         return $this->sendResponse($roles, '');
     }
@@ -40,8 +42,9 @@ class RoleController extends BaseController
             'name' => 'required|unique:roles,name',
             'permission' => 'required', //must be an array
             ]);
-            $role = Role::create(['name' => $request->input('name')]);
-            $role->syncPermissions($request->input('permission'));
+            $roles = Role::create(['name' => $request->input('name')]);
+            $roles->syncPermissions($request->input('permission'));
+
             return $this->sendResponse($roles, 'Role created successfully');
     }
 
@@ -53,7 +56,7 @@ class RoleController extends BaseController
      */
     public function show($id)
     {
-        $role = Role::find($id);
+        $role = Role::findOrFail($id);
         $role->permissions;
         return $this->sendResponse($role, '');
     }
@@ -87,7 +90,9 @@ class RoleController extends BaseController
      */
     public function destroy($id)
     {
-        DB::table("roles")->where('id',$id)->delete();
-        return $this->sendResponse($role, 'Role deleted successfully');
+        if(DB::table("roles")->where('id',$id)->delete()){
+            return $this->sendResponse($id, 'Role deleted successfully');
+        }
+        return $this->sendError('A problem occurred, contact Administrator');
     }
 }
