@@ -22,8 +22,8 @@ class PropertyController extends BaseController
 {
     public function __construct()
     {
-        $this->middleware('role:administrador');
-        $this->middleware('role:administrador|auditor')->only('index', 'show');
+        // $this->middleware('role:administrador');
+        // $this->middleware('role:administrador|auditor')->only('index', 'show');
     }
 
     use UploadImageTrait;
@@ -180,6 +180,7 @@ class PropertyController extends BaseController
                 }   
             }
         }
+        
         $success['property'] =  new PropertyResource($property);
         $success['sections'] =  new SectionCollection($catalog);
         return $this->sendResponse($success, '');

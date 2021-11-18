@@ -55,15 +55,17 @@ Route::prefix('/programs')->group(function () {
 // Route::apiResource('properties', PropertyController::class);
 
 
-Route::prefix('/audits')->group(function () {
-    Route::get('/', [AuditController::class,'index'])->name('audit.index');
-    Route::post('/{id}', [AuditController::class,'store'])->name('audit.create');
-});
+
 
 Route::middleware('auth:api')->group( function () {
 
     Route::post('register', [RegisterController::class, 'register']);
     Route::post('logout', [RegisterController::class, 'logout'])->name('logout');
+
+    Route::prefix('/audits')->group(function () {
+        Route::get('/', [AuditController::class,'index'])->name('audit.index');
+        Route::post('/{id}', [AuditController::class,'store'])->name('audit.create');
+    });
 
     // Properties Routes
     Route::prefix('/properties')->group(function () {
