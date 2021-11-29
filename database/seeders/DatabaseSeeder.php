@@ -20,8 +20,8 @@ class DatabaseSeeder extends Seeder
         // Creamos Entidades Fuertes Hoteles
 
         // populate Sections and Areas
-        \App\Models\Section::factory(10)->create()->each(function (Section $section) {
-            $section->areas()->saveMany(\App\Models\Area::factory(10)->make(['section_id' => $section->id]));
+        \App\Models\Section::factory(5)->create()->each(function (Section $section) {
+            $section->areas()->saveMany(\App\Models\Area::factory(3)->make(['section_id' => $section->id]));
         });
         // Creamos preguntas o criterios a evaluar
         \App\Models\Criteria::factory(10)->create();

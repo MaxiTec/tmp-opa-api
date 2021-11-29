@@ -14,7 +14,7 @@ class AreaFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->jobTitle(),
+            'name' => 'AREA-'.$this->faker->unique()->jobTitle(),
         ];
     }
 }

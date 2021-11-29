@@ -13,7 +13,7 @@ class CriteriaFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->jobTitle(),
+            'name' => 'QUESTION-'.$this->faker->unique()->jobTitle(),
         ];
     }
 }

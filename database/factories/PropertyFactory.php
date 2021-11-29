@@ -14,7 +14,7 @@ class PropertyFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->company(),
+            'name' => 'PROPERTY-'.$this->faker->unique()->company(),
             'manager' => $this->faker->unique()->name('male'|'female'),
             'code' =>$this->faker->unique()->postcode(),
             'brand_img' =>$this->faker->imageUrl(640, 480),

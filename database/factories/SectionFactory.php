@@ -14,7 +14,7 @@ class SectionFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->company(),
+            'name' => 'SECTION-'.$this->faker->unique()->company(),
             'description' => $this->faker->text(),
         ];
     }

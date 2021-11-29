@@ -15,7 +15,7 @@ class CreateGalleryTable extends Migration
     {
         Schema::create('gallery', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('audit_id')->unsigned();
+            $table->bigInteger('audits_id')->unsigned();
             $table->string('image_url', 250);
             $table->timestamps();
         });

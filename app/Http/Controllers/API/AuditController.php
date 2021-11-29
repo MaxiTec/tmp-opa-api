@@ -8,6 +8,7 @@ use App\Models\Audit;
 
 use App\Models\Property;
 use App\Models\Section;
+use App\Models\Question;
 
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +29,20 @@ class AuditController extends BaseController
      */
     public function index()
     {
-        $data = Audit::all();
+        $data = Audit::with(['user','program'=>function($query) {
+            return $query->leftJoin('properties as p','p.id','=','programs.property_id')
+                        ->select('programs.*','p.name as property_name');
+        },'questions'=>function($query){
+            return $query->leftJoin('area_criteria as ac','ac.id','=','questions.area_criteria_id')
+            ->leftJoin('areas as a','a.id','=','ac.area_id')
+            ->leftJoin('criteria as c','c.id','=','ac.criteria_id')
+            ->leftJoin('sections as s','s.id','=','a.section_id')
+            ->select('questions.*','c.name as criteria_name','a.name as area','s.name as section');
+        }])->first();
+
+        // $grouped = $data->questions()->groupBy(['section','area']);
+        // $grouped = $data->groupBy('program.property_name');
+        return $data->questions;
         return $this->sendResponse($data, '');
     }
 
@@ -45,13 +59,12 @@ class AuditController extends BaseController
         // recibimos por Post el id del usuario y el id de la propiedad
         $user_id = $request->input('user_id'); 
         // Data of hotel
-        $property = Property::find($id);
+        $property = Property::findOrFail($id);
 
         // Saco todos los ids de Criteria Area (preguntas del hotel)
-        // $criteria = $property->CriteriaByArea⁄;
 
         // Todas las preguntas que tiene asociado 
-        $criteria = $property->CriteriaByArea->pluck('id');
+        // $criteria = $property->CriteriaByArea->pluck('id');
 
         $programs = DB::table('programs as pr')
             ->join('properties as p', 'p.id', '=', 'pr.property_id')
@@ -62,50 +75,31 @@ class AuditController extends BaseController
             ->select('q.id as question_id','pr.id as programs_id','ac.area_id', 'a.section_id', 'ac.id as criteria_id','s.name as section','a.name as area','q.name as question')
             ->where('pr.property_id',$id)
             ->get();
-        $grouped = $programs->groupBy(['section','area']);
-        // y hago una comparacion de todas las preguntas por secciones y areas y "checkeamos" los que tengan el hotel
-        // return $catalog;
-        // dd($user->id);
-        // $questions = [];
-        // return $userAdmin->id;
-        // foreach ($catalog as $key1 => $section) {
-        //     foreach ($section->areas as $key2 => $area) {
-        //         $questions = [];
-        //         // Aca guardaremos todos las preguntas que tendra cada sección
 
-        //         foreach ($area->criteria as $key3 => $question) {
-                    // if(in_array($question->pivot->id, $criteria->toArray())){
-                    //     // $questions[$key1]['area_criteria_id'] = $question->pivot->criteria_id;
-                    //     $auditoria = Audit::create(['area_criteria_id'=>$question->pivot->criteria_id]);
-                    //     $data = [
-                    //         'user_id' => $user_id,
-                    //         'admin_id' => $userAdmin->id,
-                    //         'executed_date' => Carbon::now()
-                    //     ];
-                    //     // $auditoria = new Audit(['area_criteria_id' => $question->pivot->criteria_id]);
-                    //     $auditoria->programs()->attach($auditoria->id, $data);
-                    // }
-        //         }
+
+        $grouped = $programs->groupBy(['section','area']);
         foreach ($grouped as $key => $section) {
             foreach ($section as $key2 => $area) {
                 $questions = [];
                 foreach ($area as $key3 => $question) {
+                    $question_id = Question::create(['area_criteria_id'=>$question->criteria_id]);
+                    // $questions[] = ['area_criteria_id'=>$question->criteria_id];
                     $data = [
+                        'programs_id'=>$question->programs_id,
                         'user_id' => $user_id,
                         'admin_id' => $userAdmin->id,
                         'executed_date' => Carbon::now()
                     ];
-                $auditoria = Audit::create(['area_criteria_id'=> $question->criteria_id]);
-                $auditoria->programs()->attach($question->programs_id, $data);
                 }
-                
-                
+                // por cada area creo las preguntas y despues se las asigno a la auditoria
+               $questions[] = $question_id->id;
+               $auditoria =  Audit::create($data);
+               $auditoria->questions()->attach($questions);
             }
             
         }
-        // return 'TEST';
         return $questions;
-        return sendResponse($auditoria, 'Auditoria creada con exito');
+        // return sendResponse($auditoria, 'Auditoria creada con exito');
     }
 
     /**
