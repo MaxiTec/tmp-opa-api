@@ -64,7 +64,9 @@ Route::middleware('auth:api')->group( function () {
 
     Route::prefix('/audits')->group(function () {
         Route::get('/', [AuditController::class,'index'])->name('audit.index');
+        Route::get('/{id}', [AuditController::class,'show'])->name('audit.show');
         Route::post('/{id}', [AuditController::class,'store'])->name('audit.create');
+        Route::post('/{id}/check', [AuditController::class,'checkAudit'])->name('audit.check');
     });
 
     // Properties Routes

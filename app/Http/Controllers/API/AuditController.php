@@ -27,23 +27,57 @@ class AuditController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Audit::with(['user','program'=>function($query) {
+        $data = $request->all();
+
+        $audits = Audit::with(['user'=>function($query){
+            return $query->select('id','name','last_name');
+        },'program'=>function($query) {
             return $query->leftJoin('properties as p','p.id','=','programs.property_id')
-                        ->select('programs.*','p.name as property_name');
+                        ->leftJoin('area_criteria as ac','ac.id','=','programs.area_criteria_id')
+                        ->leftJoin('areas as a','a.id','=','ac.area_id')
+                        ->leftJoin('sections as s','s.id','=','a.section_id')
+                        ->select('programs.*','p.name as property_name','a.name as area','s.name as section');
         },'questions'=>function($query){
+            return $query->leftJoin('area_criteria as ac','ac.id','=','questions.area_criteria_id');
+            // ->select('questions.*','c.name as criteria_name','a.name as area','s.name as section','s.id as section_id');
+        }])
+        ->whereHas('program',function($query) use ($request){
+            return $query->leftJoin('properties as p','p.id','=','programs.property_id')
+                        
+                         ->where('property_id',$request->input('property'))
+                         ->where('p.is_active',true);
+        })
+        ->whereHas('questions',function($query) use ($request){
             return $query->leftJoin('area_criteria as ac','ac.id','=','questions.area_criteria_id')
             ->leftJoin('areas as a','a.id','=','ac.area_id')
-            ->leftJoin('criteria as c','c.id','=','ac.criteria_id')
             ->leftJoin('sections as s','s.id','=','a.section_id')
-            ->select('questions.*','c.name as criteria_name','a.name as area','s.name as section');
-        }])->first();
+            ->where('s.id',$request->input('section'));
+        })
+        ->get();
+        // una vez que tenemos todas las auditorias agregamos funciones para las collections
+        foreach ($audits as $key => $audit) {
+            $percentage = $this->getPercentageAudited($audit->questions);
+            $audit->percentage = $percentage;
+        }
+        // Percentage per Status
+        $getPercentage = $this->getPercentagePerStatus($audits);
+        $groupedBySections = $audits->groupBy('program.section');
 
-        // $grouped = $data->questions()->groupBy(['section','area']);
-        // $grouped = $data->groupBy('program.property_name');
-        return $data->questions;
-        return $this->sendResponse($data, '');
+        foreach ($groupedBySections as $key => $section) {
+            // return $section->avg('percentage');
+            // $percentage = $this->getPercentageBySection($section);
+            // number_format((float)$section->avg('percentage'), 2, '.', '')
+            $groupedBySections[$key] = number_format((float)$section->avg('percentage'), 2, '.', '');
+        }
+
+        $success['audited_areas'] =  $getPercentage;
+        $success['audited_by_sections'] =  $groupedBySections;
+        $critical_areas = array_merge([], $audits->where('percentage','<',60)->groupBy('program.area')->all());
+        $success['critical_areas'] =  $critical_areas; 
+        // return  $getPercentage;
+        return $this->sendResponse($success, '');
     }
 
     /**
@@ -110,7 +144,21 @@ class AuditController extends BaseController
      */
     public function show($id)
     {
-        //
+        $audit = Audit::with(['user'=>function($query){
+            return $query->select('id','name','last_name');
+        },'program'=>function($query) {
+            return $query->leftJoin('properties as p','p.id','=','programs.property_id')
+                        ->leftJoin('area_criteria as ac','ac.id','=','programs.area_criteria_id')
+                        ->leftJoin('areas as a','a.id','=','ac.area_id')
+                        ->leftJoin('sections as s','s.id','=','a.section_id')
+                        ->select('programs.*','p.name as property_name','a.name as area','s.name as section');
+        },'questions'=>function($query){
+            return $query->leftJoin('area_criteria as ac','ac.id','=','questions.area_criteria_id')
+                         ->leftJoin('criteria as c','c.id','=','ac.criteria_id')
+                         ->select('c.*','questions.*');
+        }])
+        ->findOrFail($id);
+        return $this->sendResponse($audit, 'yeah');
     }
 
     /**
@@ -135,4 +183,46 @@ class AuditController extends BaseController
     {
         //
     }
-}
+
+    private function getPercentageAudited($questions)
+    {   
+        // $collect = collect($questions);
+        $total = $questions->where('not_apply', 0)->count();
+        $checked = $questions->where('check',true)->count() ?? 0;
+        $percentage = ($checked/$total) * 100;
+        // return $percentage;
+        return number_format((float)$percentage, 2, '.', '');
+    }
+    private function getPercentagePerStatus($audits)
+    {
+        $res = [];
+        $total = $audits->count();
+        $grouped = $audits->countBy(function ($item, $key) {
+            if($item->percentage  >= 80){
+                return 'Acceptable';
+             }elseif($item->percentage  <80 && $item->percentage  >= 60){
+                return 'Below Standard';
+             }else{
+                return 'Critical';
+             }
+        });
+        foreach ($grouped as $key => $value) {
+            $res[] = ['status'=>$key,'percentage'=>number_format((float)($value/$total)*100, 2, '.', '')];
+        }
+        return ['percentage' => $res, 'total' => $total];
+    }
+
+    public function checkAudit(Request $request, $id)
+    {
+        $audit = Audit::find($id);
+        $questions = $audit->questions;
+        $req = $request->all();
+        foreach ($req['questions'] as $key => $value) {
+            // $test = $audit->questions()->where('id',$value['id']);
+            // $test->update(['check'=> $value['check'], 'not_apply'=>$value['not_apply']]);
+            $audit->questions()->updateExistingPivot($value['id'], ['check'=> $value['check'], 'not_apply'=>$value['not_apply']]);
+        }
+        return $this->sendResponse($questions, 'yeah');
+    }
+
+ }

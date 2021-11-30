@@ -17,6 +17,12 @@ class CreateAuditsQuestionsTable extends Migration
             $table->id();
             $table->bigInteger('questions_id')->unsigned();
             $table->bigInteger('audits_id')->unsigned();
+
+            $table->boolean('check')->default(0);
+            $table->boolean('not_apply')->default(0);
+            // Observaciones por pregunta, por si acaso
+            $table->string('observations', 1000)->nullable();
+            
             $table->timestamps();
 
             $table->index(['questions_id'], 'fk_audits_questions_to_questions');

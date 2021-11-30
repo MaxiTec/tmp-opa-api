@@ -13,7 +13,7 @@ class Question extends Model
     
     public function areaCriteria()
     {
-        return $this->hasMany(AreaCriteria::class, 'area_criteria_id', 'id');
+        return $this->hasMany(AreaCriteria::class, 'area_criteria_id', 'id')->withPivot('check','not_apply');
     }
     
 }

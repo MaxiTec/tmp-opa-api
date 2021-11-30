@@ -24,7 +24,7 @@ class Audit extends Model
 
     public function questions()
     {
-        return $this->belongsToMany(Question::class,'audits_questions','audits_id','questions_id');
+        return $this->belongsToMany(Question::class,'audits_questions','audits_id','questions_id')->withPivot('check','not_apply');;
     }
 
     public function user()

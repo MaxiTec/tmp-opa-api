@@ -19,10 +19,10 @@ class CreateQuestionsTable extends Migration
             // Relacion con las preguntas del hotel
             $table->bigInteger('area_criteria_id')->unsigned();
             // $table->bigInteger('criteria_id')->unsigned();
-            $table->boolean('check')->default(0);
-            $table->boolean('not_apply')->default(0);
-            // Observaciones por pregunta, por si acaso
-            $table->string('observations', 1000)->nullable();
+            // $table->boolean('check')->default(0);
+            // $table->boolean('not_apply')->default(0);
+            // // Observaciones por pregunta, por si acaso
+            // $table->string('observations', 1000)->nullable();
             $table->timestamps();
         });
     }
