@@ -21,7 +21,13 @@ class SectionResource extends JsonResource
             'created_at' => $this->created_at->format('Y-m-d'),
             'updated_at' => $this->updated_at->format('Y-m-d'),
             'status' => $this->status,
-            'areas' => AreaResource::collection($this->areas),
+            'is_active' => $this->is_active,
+            // only if appear in relationship
+            // 'questions' => CriteriaResource::collection($this->whenLoaded('criteria')),
+            // 'questions' => CriteriaResource::collection($this->whenLoaded('criteria')),
+            'areas' => AreaResource::collection($this->whenLoaded('areas')),
+            'count_areas' => count($this->areas),
+            // 'count_areas' => count($this->areas->where('is_active',true)->where('status',true)),
             // 'updated_at' => $this->updated_at,
         ];
     }

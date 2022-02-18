@@ -36,7 +36,8 @@ class PropertyController extends BaseController
      */
     public function index()
     {
-        return PropertyResource::collection(Property::where('is_active',true)->get());
+        return PropertyResource::collection(Property::where('is_active',true)->paginate(10));
+        // return PropertyResource::collection(Property::where('status',true)->get()); //must be status
     }
 
     /**
@@ -47,18 +48,16 @@ class PropertyController extends BaseController
      */
     public function store(PropertyPostRequest $request)
     {
-        $file = $request->file('brand_img');
         $datos = $request->all();
-        // return $file;
-        $is_upload = $this->uploadImage($request,'hotels');
-
-        if($is_upload){
-            $datos['brand_img'] = $is_upload;
+        if($request->has('brand_img')){
+            $file = $request->file('brand_img');
+            $is_upload = $this->uploadImage($request,'hotels');
+            if($is_upload){
+                $datos['brand_img'] = $is_upload;
+            }
         }
         $property = Property::create($datos);
-            return response([
-                'data' => new PropertyResource($property),
-            ], Response::HTTP_CREATED);
+        return response(['data' => new PropertyResource($property),], Response::HTTP_CREATED);
     }
 
     /**
@@ -91,13 +90,13 @@ class PropertyController extends BaseController
             'name'=> 'string',
             'manager' => 'string|max:100',
             'code' => 'unique:properties,code,'.$id,
-            'brand_img' => 'image|max:1024',
+            // 'brand_img' => 'image|max:1024',
             'address' => 'string',
             'phone' => 'string',
             'lat' => 'string',
             'lon' => 'string',
             'phone_code' => 'string',
-            'rooms' => 'string'
+            'rooms' => 'required'
         ]);
          
         if ($validator->fails()) {
@@ -107,18 +106,18 @@ class PropertyController extends BaseController
         
         try {
             $property = Property::findOrFail($id);
-            if($request->has('brand_img')){
-                // Si quiere cambiar la imagen
-                if(!empty($property->brand_img)){
-                    // Eliminamos la imagen anterior
-                    // return $property->brand_img
-                    $this->deleteImage($property->brand_img,'hotels');
-                    // return 'SI tiene IMAGEn';
-                }
-                // return 'NO TIENE IMAGENES';
-                $is_upload = $this->uploadImage($request,'hotels');
-                $datos['brand_img'] = $is_upload;
-            }
+            // if($request->has('brand_img')){
+            //     // Si quiere cambiar la imagen
+            //     if(!empty($property->brand_img)){
+            //         // Eliminamos la imagen anterior
+            //         // return $property->brand_img
+            //         $this->deleteImage($property->brand_img,'hotels');
+            //         // return 'SI tiene IMAGEn';
+            //     }
+            //     // return 'NO TIENE IMAGENES';
+            //     $is_upload = $this->uploadImage($request,'hotels');
+            //     $datos['brand_img'] = $is_upload;
+            // }
             $property->update($datos);
 
             return response([
@@ -141,7 +140,7 @@ class PropertyController extends BaseController
     {
         try {
             $property = Property::findOrFail($id);
-            $property->is_active = 0;
+            $property->status = 0;
             $property->save();
             return response([
                 'data' => new PropertyResource($property),
@@ -150,6 +149,18 @@ class PropertyController extends BaseController
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
         }
     }
+    public function toggleActive($id) {
+        try {
+            $property = Property::findOrFail($id);
+            $property->is_active = !$property->is_active;
+            $property->save();
+            return response(['data' => new PropertyResource($property),]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
+        
+    }
+
     // Esto puede estar en sections
     public function showCriteria($id){
         // obtenemos id del hotel para ir asignando del template

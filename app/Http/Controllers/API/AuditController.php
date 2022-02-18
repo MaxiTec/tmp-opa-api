@@ -30,7 +30,7 @@ class AuditController extends BaseController
     public function index(Request $request)
     {
         $data = $request->all();
-
+        // dd($data);
         $audits = Audit::with(['user'=>function($query){
             return $query->select('id','name','last_name');
         },'program'=>function($query) {
@@ -45,9 +45,8 @@ class AuditController extends BaseController
         }])
         ->whereHas('program',function($query) use ($request){
             return $query->leftJoin('properties as p','p.id','=','programs.property_id')
-                        
                          ->where('property_id',$request->input('property'))
-                         ->where('p.is_active',true);
+                         ->where('p.is_active', true);
         })
         ->whereHas('questions',function($query) use ($request){
             return $query->leftJoin('area_criteria as ac','ac.id','=','questions.area_criteria_id')
@@ -56,11 +55,15 @@ class AuditController extends BaseController
             ->where('s.id',$request->input('section'));
         })
         ->get();
+
+        // dd($audits);
         // una vez que tenemos todas las auditorias agregamos funciones para las collections
         foreach ($audits as $key => $audit) {
-            $percentage = $this->getPercentageAudited($audit->questions);
+            $percentage = $this->getPercentageAudited($audit);
             $audit->percentage = $percentage;
+            $audit->totalQ = $audit->questions->count();
         }
+       
         // Percentage per Status
         $getPercentage = $this->getPercentagePerStatus($audits);
         $groupedBySections = $audits->groupBy('program.section');
@@ -74,6 +77,7 @@ class AuditController extends BaseController
 
         $success['audited_areas'] =  $getPercentage;
         $success['audited_by_sections'] =  $groupedBySections;
+
         $critical_areas = array_merge([], $audits->where('percentage','<',60)->groupBy('program.area')->all());
         $success['critical_areas'] =  $critical_areas; 
         // return  $getPercentage;
@@ -184,45 +188,59 @@ class AuditController extends BaseController
         //
     }
 
-    private function getPercentageAudited($questions)
+    private function getPercentageAudited($audit)
     {   
+        // dd($questions);
         // $collect = collect($questions);
-        $total = $questions->where('not_apply', 0)->count();
-        $checked = $questions->where('check',true)->count() ?? 0;
+        $total = $audit->questions()->wherePivot('not_apply', 0)->count();
+
+        $checked = $audit->questions()->wherePivot('check',true)->count();
+        // dd($total, $checked);
         $percentage = ($checked/$total) * 100;
         // return $percentage;
+        // dd($percentage);
         return number_format((float)$percentage, 2, '.', '');
     }
     private function getPercentagePerStatus($audits)
     {
+        // dd($audits->toArray());
         $res = [];
         $total = $audits->count();
         $grouped = $audits->countBy(function ($item, $key) {
             if($item->percentage  >= 80){
                 return 'Acceptable';
-             }elseif($item->percentage  <80 && $item->percentage  >= 60){
+             }elseif($item->percentage < 80 && $item->percentage  >= 60){
                 return 'Below Standard';
              }else{
                 return 'Critical';
              }
         });
+        // dd($grouped);
         foreach ($grouped as $key => $value) {
-            $res[] = ['status'=>$key,'percentage'=>number_format((float)($value/$total)*100, 2, '.', '')];
+            $res[] = [
+                'status'=>$key,
+                'percentage'=>number_format((float)($value/$total)*100, 2, '.', ''),
+                'count'=> $value
+            ];
         }
         return ['percentage' => $res, 'total' => $total];
     }
 
     public function checkAudit(Request $request, $id)
     {
-        $audit = Audit::find($id);
+        $audit = Audit::findOrFail($id);
         $questions = $audit->questions;
         $req = $request->all();
+        // dd($questions);
         foreach ($req['questions'] as $key => $value) {
-            // $test = $audit->questions()->where('id',$value['id']);
+            // Preguntar por esto
+            $test = $audit->questions()->select('audits_questions.id');
+            // ->where('audit_questions.id', $value['id']);
+            // dd($test->get());
             // $test->update(['check'=> $value['check'], 'not_apply'=>$value['not_apply']]);
             $audit->questions()->updateExistingPivot($value['id'], ['check'=> $value['check'], 'not_apply'=>$value['not_apply']]);
         }
-        return $this->sendResponse($questions, 'yeah');
+        return $this->sendResponse($audit->fresh('questions'),  'yeah');
     }
 
  }

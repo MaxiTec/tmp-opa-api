@@ -19,6 +19,7 @@ class AreaResource extends JsonResource
             'name' => $this->name,
             'status' => $this->status,
             'is_active' => $this->is_active,
+            // 'sections_count' => $this->section_count,
             'questions' => CriteriaResource::collection($this->whenLoaded('criteria')),
         ];
     }

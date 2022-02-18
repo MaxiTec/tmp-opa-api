@@ -13,9 +13,11 @@ class Area extends Model
     public function section(){
         return $this->belongsTo('App\Models\Section');
     }
-    public function criteria()
-    {
+    public function criteria(){
         // return $this->belongsToMany(Criteria::class);
         return $this->belongsToMany(Criteria::class, 'area_criteria', 'area_id','criteria_id')->withPivot('id');
+    }
+    public function scopeActive($query){
+        return $query->where('status', true);
     }
 }

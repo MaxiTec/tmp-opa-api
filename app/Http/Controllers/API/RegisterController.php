@@ -41,7 +41,7 @@ class RegisterController extends BaseController
         }
    
         $input = $request->all();
-        $input['password'] = Hash::make($input['password']);
+        $input['password'] = bcrypt($input['password']);
         $user = User::create($input);
         // !We need to add permissions and roles
         $user->assignRole($request->input('roles'));
@@ -61,6 +61,10 @@ class RegisterController extends BaseController
     public function login(Request $request)
     {
         // we Login with this credentials
+        $this->validate($request, [
+            'email'           => 'required|max:255|email',
+            'password'           => 'required',
+        ]);
         if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){ 
             $user = Auth::user(); 
             // $user = App\User::findByEmail($request->input('email'))->firstOrFail();
@@ -81,15 +85,17 @@ class RegisterController extends BaseController
             })->flatten()->values()->all();
 
             $success['token'] =  $user->createToken(config('app.name'))->accessToken; 
+            $success['id'] =  $user->id;
             $success['name'] =  $user->name;
             $success['last_name'] =  $user->last_name;
-            $success['roles'] =  $roles;
+            // $success['roles'] =  $roles;
             $success['permissions'] =  $permissions;
    
             return $this->sendResponse($success, 'User login successfully.');
         } 
         else{ 
-            return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);
+            return $this->sendError('Unauthorized.', ['error'=>'Las credenciales no son válidas'], 422);
+            // return $this->sendError('Unauthorized.', ['error'=>'Las credenciales no son válidas'], 422);
         } 
     }
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\API\PropertyController;
 use App\Http\Controllers\API\ProgramController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\AuditController;
+use App\Http\Controllers\API\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,28 +23,8 @@ use App\Http\Controllers\API\AuditController;
 */
 
 // Public routes
-Route::post('login', [RegisterController::class, 'login'])->name('login');
-/*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::::::::::::::::::::::::::::::::: SECTION ROUTES:::::::::::::::::::::::::::
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-Route::apiResource('sections', SectionController::class);
-Route::post('sections/{id}/areas', [SectionController::class, 'assignAreas'])->name('assign');
+Route::post('/login', [RegisterController::class, 'login'])->name('login');
 
-
-Route::apiResource('criteria', CriteriaController::class);
-/*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::::::::::::::::::::::::::::::::: AREAS ROUTES:::::::::::::::::::::::::::::
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-
-Route::prefix('/areas')->group(function () {
-    Route::get('/', [AreaController::class,'index'])->name('areas.index');
-    Route::get('/{id}', [AreaController::class,'show'])->name('areas.show');
-    Route::put('/{id}', [AreaController::class,'update'])->name('areas.update');
-    Route::delete('/{id}', [AreaController::class,'destroy'])->name('areas.delete');
-    Route::get('/{id}/status', [AreaController::class,'toggleStatus'])->name('areas.status');
-    Route::get('/{id}/active', [AreaController::class,'toggleActive'])->name('areas.active');
-    Route::post('/{id}/assign', [AreaController::class,'assignCriteria'])->name('areas.assign');
-});
 
 
 Route::prefix('/programs')->group(function () {
@@ -53,7 +34,6 @@ Route::prefix('/programs')->group(function () {
 ::::::::::::::::::::::::::::::::: AREAS ROUTES:::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 // Route::apiResource('properties', PropertyController::class);
-
 
 
 
@@ -74,18 +54,49 @@ Route::middleware('auth:api')->group( function () {
         Route::get('/', [PropertyController::class,'index'])->name('properties.index');
         Route::post('/', [PropertyController::class,'store'])->name('properties.create');
         Route::get('/{id}', [PropertyController::class,'show'])->name('properties.show');
-        Route::post('/{id}/update', [PropertyController::class,'update'])->name('properties.update');
+        // This route would be change if we store images
+        Route::put('/{id}', [PropertyController::class,'update'])->name('properties.update');
         Route::delete('/{id}', [PropertyController::class,'destroy'])->name('properties.delete');
+        Route::get('/{id}/active', [PropertyController::class,'toggleActive'])->name('properties.active');
         Route::get('/{id}/catalog', [PropertyController::class,'showCriteria'])->name('properties.catalog');
         Route::post('/{id}/assign', [PropertyController::class,'AssignToProperties'])->name('properties.assign');
         Route::post('/{id}/show', [PropertyController::class,'ProgramByHotel'])->name('properties.showByHotel');
         Route::post('/{id}/duplicate', [PropertyController::class,'duplicate'])->name('properties.duplicate');
     });
 
-    Route::group(['middleware' => ['role:auditor']], function () {
-        Route::apiResource('roles', RoleController::class);
-    });
-    // Route::group(['middleware' => ['role:admin']], function () {
+    // Route::group(['middleware' => ['role:administrator']], function () {
     //     Route::apiResource('roles', RoleController::class);
     // });
+    Route::group(['middleware' => ['role:administrator']], function () {
+        Route::get('/user/{user}/active', [UserController::class,'disable'])->name('user.disable');
+        Route::apiResource('user', UserController::class);
+    });
+    
+    Route::apiResource('roles', RoleController::class);
+
+    /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ::::::::::::::::::::::::::::::::: SECTION ROUTES:::::::::::::::::::::::::::
+    :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    Route::get('sections-formatted', [SectionController::class,'getAllFormattedResources']);
+    Route::apiResource('sections', SectionController::class);
+    Route::post('sections/{id}/area', [SectionController::class, 'assignAreas'])->name('sections.assign');
+    Route::get('sections/{id}/active', [SectionController::class,'toggleActive'])->name('sections.active');
+
+    Route::apiResource('criteria', CriteriaController::class);
+    /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ::::::::::::::::::::::::::::::::: AREAS ROUTES:::::::::::::::::::::::::::::
+    :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    Route::prefix('/areas')->group(function () {
+        Route::get('/', [AreaController::class,'index'])->name('areas.index');
+        Route::get('/{id}', [AreaController::class,'show'])->name('areas.show');
+        Route::put('/{id}', [AreaController::class,'update'])->name('areas.update');
+        Route::delete('/{id}', [AreaController::class,'destroy'])->name('areas.delete');
+        Route::get('/{id}/status', [AreaController::class,'toggleStatus'])->name('areas.status');
+        Route::get('/{id}/active', [AreaController::class,'toggleActive'])->name('areas.active');
+        Route::post('/{id}/assign', [AreaController::class,'assignCriteria'])->name('areas.assign');
+       Route::post('/{id}/add-question', [AreaController::class,'addQuestion'])->name('sections.addQuestion');
+       Route::post('/{id}/remove-question', [AreaController::class,'removeQuestion'])->name('sections.removeQuestion');
+       Route::post('/{id}/update-question', [CriteriaController::class,'update'])->name('sections.updateQuestion');
+
+    });
 });

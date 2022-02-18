@@ -11,13 +11,13 @@ use DB;
 use Auth;
 class RoleController extends BaseController
 {
-    function __construct()
-    {
-        //  $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index','store']]);
-        //  $this->middleware('permission:role-create', ['only' => ['create','store']]);
-        //  $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
-        //  $this->middleware('role:admin', ['only' => ['index']]);
-    }
+    // function __construct()
+    // {
+    //     //  $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index','store']]);
+    //     //  $this->middleware('permission:role-create', ['only' => ['create','store']]);
+    //     //  $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
+    //     //  $this->middleware('role:admin', ['only' => ['index']]);
+    // }
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +25,7 @@ class RoleController extends BaseController
      */
     public function index()
     {
-        $roles = Role::where('name', 'NOT LIKE', '%admin%')->orderBy('id','ASC')->get();
+        $roles = Role::where('name', 'NOT LIKE', '%super-admin%')->orderBy('id','ASC')->get();
         // $roles = Role::orderBy('id','DESC')->paginate(5);
         return $this->sendResponse($roles, '');
     }

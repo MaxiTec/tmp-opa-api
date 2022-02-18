@@ -27,12 +27,12 @@ class PropertyPostRequest extends FormRequest
             'name'=> 'required|string',
             'manager' => 'required|string|max:100',
             'code' => 'required|unique:properties,code,'. $this->id,
-            'brand_img' => 'required|image|max:1024',
-            'address' => 'required|string',
-            'phone' => 'required|string',
-            'lat' => 'required|string',
-            'lon' => 'required|string',
-            'phone_code' => 'required|string',
+            'brand_img' => 'image|max:1024',
+            'address' => 'string',
+            'phone' => 'string',
+            'lat' => 'string',
+            'lon' => 'string',
+            'phone_code' => 'string',
             'rooms' => 'required|string'
         ];
     }

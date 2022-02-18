@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Area;
+use App\Models\Criteria;
 use App\Http\Resources\AreaResource;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -19,11 +20,12 @@ class AreaController extends Controller
      */
     public function index()
     {
-        $res = Area::with('section')
-        ->orderBy('name', 'desc')
-        ->get();
-        return AreaResource::collection($res)->groupBy('section.name');
-    
+        $res = Area::withCount('section')->where('status',true)
+        ->orderBy('name', 'desc')->paginate(10);
+        // ->get();
+        // return $res;
+        return AreaResource::collection($res);
+        // return AreaResource::collection($res)->groupBy('section.name');
     }
 
     /**
@@ -68,23 +70,22 @@ class AreaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $area_id)
     {
         $data = $request->all();
         try {
             $validator = Validator::make($data, [
-                'name' => ['required','string','max:100', Rule::unique('areas', 'name')->ignore($id)->where('section_id', $id)],
+                'name' => ['required','string','max:100', Rule::unique('areas', 'name')->ignore($area_id)->where('section_id', $request->input('section_id'))],
             ]);
              
             if ($validator->fails()) {
                 return response(['error' =>$validator->messages()->first()],Response::HTTP_BAD_REQUEST);
             }
 
-            $area = Area::findOrFail($id);
-
+            $area = Area::findOrFail($area_id);
             $area->update($data);
-
-            return response(['data' => new AreaResource($area)]);
+            return response(new AreaResource($area),200);
+            
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
         }
@@ -98,21 +99,18 @@ class AreaController extends Controller
      */
     public function destroy($id)
     {
+        // Preguntar si debo eliminar o no Las areas ya que estan eliminarian sus Items ( servira de algo conserrvarlas?)
+        // si no las elimino no se eliminan sus ITEMS
         try {
-            $area = Area::with(['section'=>function($query){
-                // Solamente si las areas estan activas esto no debe tenerlo los admins
-                    $query->where('is_active',true)->where('status',true);
-            }])
-            ->where('is_active', true)
+            $area = Area::with(['section'])
+            // ->where('is_active', true)
             ->where('status', true)
             ->findOrFail($id);
             if($area){
-                // cambiamos status a 0
                 $area->status = 0;
+                // Debo Eliminar (?) ya que aparecen en la tabla area_criteria....
                 $area->save();
-                return response([
-                    'data' => new AreaResource($area),
-                ]);
+                return response(new AreaResource($area),200);
             }
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
@@ -161,6 +159,36 @@ class AreaController extends Controller
             $area->criteria()->sync($data['criteria']);
 
             return response(['data' => new AreaResource($area)]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function addQuestion(Request $request, $id){
+        $question = Criteria::firstOrCreate(['name' => $request->input('name')]);
+        try {
+            $area = Area::findOrFail($id);
+            $criterias = $area->criteria->pluck('id')->toArray();
+            // return $criterias;
+            if(in_array($question->id, $criterias)){
+                return response(['error' => 'Criteria already exists'],Response::HTTP_BAD_REQUEST);
+            }
+            $area->criteria()->attach($question->id);
+            return response($area->load('criteria') ,200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
+        }
+    }
+    public function removeQuestion(Request $request, $id){//area_id
+        try {
+            $area = Area::findOrFail($id);
+            $criterias = $area->criteria->pluck('id')->toArray();
+            $filteredCriterias = collect($criterias)->filter(function($item) use($request){
+                return $item != $request->input('criteria_id');
+            })->all();
+            $area->criteria()->sync($filteredCriterias);
+            return response($area->load('criteria'),200);
+            // return response( new AreaResource($area->load('criteria')),200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Record not found'], Response::HTTP_NOT_FOUND);
         }

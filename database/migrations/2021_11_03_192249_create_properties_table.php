@@ -13,6 +13,7 @@ class CreatePropertiesTable extends Migration
      */
     public function up()
     {
+        // ! Question: deboe tener una relacion con el usuario? un auditor soloo podra ver las estadisticas de su hotel
         Schema::create('properties', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name', 100);
@@ -26,6 +27,7 @@ class CreatePropertiesTable extends Migration
             $table->string('lon', 50)->nullable();
             $table->integer('rooms');
             $table->boolean('is_active')->default(1);
+            $table->boolean('status')->default(1);
             $table->timestamps();
             // The name should'nt repeat
             $table->unique(['code']);
